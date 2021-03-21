@@ -18,7 +18,7 @@ const sortRushStats = (sortKey, records) => records.sort(compareByKey(sortKey))
 
 const filterRushStats = (filterString, records) => records.filter(record => filterNameByString(record, filterString))
 
-const getPage = (records, page, pageSize) => records.slice(page * pageSize, (page * pageSize) + pageSize)
+const getPage = (records, page, pageSize = 10) => records.slice(page * pageSize, (page * pageSize) + pageSize)
 
 const createRushStatsCache = async () => {
   let rushStats = []
