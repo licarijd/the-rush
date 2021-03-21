@@ -52,10 +52,11 @@ class RushRecordsContainer extends React.Component {
       }
     } else if (this.state.newResults) {
       const {results, isFinalPage, cacheKey} = await this.fetchPage()
+      this.setState({ newResults: false })
       this.reset(this.state.page.value, results, cacheKey, isFinalPage)
     }
 
-    this.setState({ shouldUpdatePage: false, newResults: false })
+    this.setState({ shouldUpdatePage: false })
   }
 
   reset(page, records, cacheKey, isFinalPage) {
@@ -92,10 +93,17 @@ class RushRecordsContainer extends React.Component {
   }
 
   onInputChange(event) {
+    const newState = {}
     const sanitizedString = event.target.value.replace(/[^A-Za-z]+/g, '')
-    this.setState({
-      filterString: {key: 'filterString', value: sanitizedString}
-    });
+
+    newState.filterString = {key: 'filterString', value: sanitizedString}
+
+    if (!sanitizedString) {
+      newState.page = {key: 'page', value: 0}
+      newState.newResults = true
+    }
+
+    this.setState(newState)
   }
 
   async onSortChange(sortKey) {
