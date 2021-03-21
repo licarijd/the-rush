@@ -38,28 +38,41 @@ class RushRecordsContainer extends React.Component {
   }
 
   async updatePage() {
-    const { page } = this.state
-    const {rushRecords} = this.props
+    const { page, newResults } = this.state
+    const { rushRecords } = this.props
     const pageExists = rushRecords[page.value] && rushRecords[page.value].records && rushRecords[page.value].records.length
 
-    if (!pageExists) {
+    if (newResults) {
       const {results, isFinalPage, cacheKey} = await this.fetchPage()
-      const shouldClearStore = cacheKey != rushRecords.cacheKey
-      if (shouldClearStore) {
-        this.reset(this.state.page.value, results, cacheKey, isFinalPage)
-      } else {
-        this.props.dispatch(addPage(this.state.page.value, results, isFinalPage))
-      }
-    } else if (this.state.newResults) {
-      const {results, isFinalPage, cacheKey} = await this.fetchPage()
+
       this.setState({ newResults: false })
-      this.reset(this.state.page.value, results, cacheKey, isFinalPage)
+      this.resetDataStore(this.state.page.value, results, cacheKey, isFinalPage)
+    } else if (!pageExists) {
+      const pageData = await this.fetchPage()
+      
+      this.updateDataStore(pageData)
     }
 
     this.setState({ shouldUpdatePage: false })
   }
 
-  reset(page, records, cacheKey, isFinalPage) {
+  updateDataStore(pageData, shouldUpdateAllRecords) {
+    const { results, isFinalPage, cacheKey } = pageData
+    const { rushRecords } = this.props
+    const shouldClearStore = cacheKey != rushRecords.cacheKey
+
+    if (shouldClearStore) {
+      const page = this.state.page.value
+      const pageResults = shouldUpdateAllRecords 
+        ? results.slice(page * defaultPageSize, (page * defaultPageSize) + defaultPageSize)
+        : results
+      this.resetDataStore(this.state.page.value, pageResults, cacheKey, isFinalPage)
+    } else {
+      this.props.dispatch(addPage(this.state.page.value, results, isFinalPage))
+    }
+  }
+
+  resetDataStore(page, records, cacheKey, isFinalPage) {
     const payload = {
       page,
       records,
@@ -71,20 +84,12 @@ class RushRecordsContainer extends React.Component {
 
   async fetchAllRecords() {
     const { sortKey, filterString } = this.state
-    const {rushRecords} = this.props
-    const {results, cacheKey} = await fetchGet(rushStatsEndpoint, [sortKey, filterString])
+    const page = await fetchGet(rushStatsEndpoint, [sortKey, filterString])
 
-    this.props.dispatch(addAllRecordsJson(results))
+    this.props.dispatch(addAllRecordsJson(page.results))
+    this.updateDataStore(page, true)
 
-    const shouldClearStore = cacheKey != rushRecords.cacheKey
-    if (shouldClearStore) {
-      const page = this.state.page.value
-      const pageStart = page * defaultPageSize
-      const pageResults = results.slice(pageStart, pageStart + defaultPageSize)
-      this.reset(page, pageResults, cacheKey, isFinalPage)
-    }
-
-    return results
+    return page.results
   }
 
   async fetchPage() {
