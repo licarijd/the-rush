@@ -12,12 +12,10 @@ const getRushStatsData = async (filterString, sortKey, page, pageSize) => {
   const rushStatsData = {}
   const results = prepareRecords(records, filterString, sortKey)
   const isValidPage = (page || page === 0)
+  const resultsPage = isValidPage ? getPage(results, page, pageSize) : results
 
   rushStatsData.cacheKey = statsCache && statsCache.cacheKey
   rushStatsData.isFinalPage = isValidPage ? isFinalPage(page, pageSize, results) : false
-
-  const resultsPage = isValidPage ? getPage(results, page, pageSize) : results
-
   rushStatsData.results = resultsPage
 
   return rushStatsData
