@@ -6,7 +6,8 @@ const httpStatus = require('http-status');
 const Error = require('../models/Error');
 
 router.get('*', async (request, response) => {
-  const { sortKey, filterString } = request.query
+  const { sortKey } = request.query
+  let filterString = request.query.filterString.replace(/[^A-Za-z]+/g, '')
   let { page, pageSize } = request.query
 
   if (page && !/^\d+$/.test(page)) {
