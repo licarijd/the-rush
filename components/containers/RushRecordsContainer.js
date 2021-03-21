@@ -29,21 +29,21 @@ class RushRecordsContainer extends React.Component {
   }
 
   componentDidMount() {
-    this.fetchPage()
+    this.updatePage()
   }
 
   componentDidUpdate() {
     if (this.state.shouldUpdatePage || this.state.newResults)
-      this.fetchPage()
+      this.updatePage()
   }
 
-  async fetchPage() {
-    const { page, pageSize, sortKey, filterString } = this.state
+  async updatePage() {
+    const { page } = this.state
     const {rushRecords} = this.props
     const pageExists = rushRecords[page.value] && rushRecords[page.value].records && rushRecords[page.value].records.length
 
     if (!pageExists) {
-      const {results, isFinalPage, cacheKey} = await fetchGet(rushStatsEndpoint, [page, pageSize, sortKey, filterString])
+      const {results, isFinalPage, cacheKey} = await this.fetchPage()
       const shouldClearStore = cacheKey != rushRecords.cacheKey
       if (shouldClearStore) {
         this.reset(this.state.page.value, results, cacheKey, isFinalPage)
@@ -51,7 +51,7 @@ class RushRecordsContainer extends React.Component {
         this.props.dispatch(addPage(this.state.page.value, results, isFinalPage))
       }
     } else if (this.state.newResults) {
-      const {results, isFinalPage, cacheKey} = await fetchGet(rushStatsEndpoint, [page, pageSize, sortKey, filterString])
+      const {results, isFinalPage, cacheKey} = await this.fetchPage()
       this.reset(this.state.page.value, results, cacheKey, isFinalPage)
     }
 
@@ -84,6 +84,11 @@ class RushRecordsContainer extends React.Component {
     }
 
     return results
+  }
+
+  async fetchPage() {
+    const { page, pageSize, sortKey, filterString } = this.state
+    return await fetchGet(rushStatsEndpoint, [page, pageSize, sortKey, filterString])
   }
 
   onInputChange(event) {
