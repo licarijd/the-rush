@@ -1,37 +1,24 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
-## Getting Started
-
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/import?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
-
 
 To run with Docker: 
 
-docker build -t licarijd/nfl-rushing-webapp nfl-rushing-webapp
+docker build -t licarijd/the-rush the-rush
 
-docker run -p 8081:8081 -d licarijd/nfl-rushing-webapp
+docker run -p 8081:8081 -d licarijd/the-rush
+
+
+Design Decisions
+
+Server-Side Caching:
+In a large scale application, the rush records would likely be coming from some dependency. To prevent overwhelming such a dependency, I cache the response for a one minute server-side,
+which is short enough that cache expiry is still easy to test. 
+
+Client-Side Caching and Pagination:
+The API only returns one page at a time, to prevent extrmely large responses in the case that the number of records increases. Every time a new page is requested, the client checks if the server cache key has changed. A new cache key indicates that the server has fetched new rush records from the NFL Rush Records data source. So if the cache key changes, the Redux store will be cleared. If the cache key hasn't changed, pages which exist in the Redux store will be used instead of fetching new data.
+
+Why did I use NexJS?
+I know that I'll be adding features to this project if I make it to the next interview stage; if one of those features involves a new route, NextJS will be a life saver!
+
+Why did I build an isomorphic web app?
+Given the simplicity of the application, I decided to make the server render the front end; thus getting the benefits of both a single page application and server side rendering. That being said, I did not make use of shared (server and client) data and functions. Every constant and function either belongs exclusively to the server, or exclusively to the client. So if it is ever desirable to split the server and the React front end into different projects, it wouldn't be too much of a headache!
