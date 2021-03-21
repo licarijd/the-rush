@@ -1,52 +1,51 @@
 import React from "react";
 import { connect } from 'react-redux'
 import { fetchGet } from "../../client/api/nflRushStatsAPI";
-import { addAllRecordsJson, addPage, resetRushRecords, ADD_RUSH_RECORD_PAGE } from "../../client/actions/RushRecordsActions"
+import { addAllRecordsJson, addPage, resetRushRecords } from "../../client/actions/RushRecordsActions"
 import Record from "../Record";
 import PropTypes from 'prop-types';
 import { bindActionCreators } from 'redux'
-import CsvDownloadLink from "../CsvDownloadLink";
+import { ExportToCsv } from 'export-to-csv';
 
 const directions = {
   FORWARD: 'FORWARD',
   BACK: 'BACK'
 }
 const rushStatsEndpoint = 'nfl-rush-stats'
+const defaultPageSize = 10
 class RushRecordsContainer extends React.Component {
 
   constructor() {
     super()
     this.state = {
       page: {key: 'page', value: 0},
-      pageSize: {key: 'pageSize', value: 10},
+      pageSize: {key: 'pageSize', value: defaultPageSize},
       sortKey: {key: 'sortKey', value: 'Yds'},
       filterString: {key: 'filterString', value: ''},
       shouldUpdatePage: false,
-      shouldUpdateJson: false,
-      isFinalPage: false
+      isFinalPage: false,
+      newSortKey: false
     }
   }
 
   componentDidMount() {
-    this.fetchRecords()
+    this.fetchPage()
   }
 
   componentDidUpdate() {
-    if (this.state.shouldUpdateJson)
-      this.fetchAllRecords()
-    if (this.state.shouldUpdatePage)
-      this.fetchRecords()
+    if (this.state.shouldUpdatePage || this.state.newSortKey)
+      this.fetchPage()
   }
 
-  async fetchRecords() {
+  async fetchPage() {
     const { page, pageSize, sortKey, filterString } = this.state
     const {rushRecords} = this.props
     const pageExists = rushRecords[page.value] && rushRecords[page.value].records && rushRecords[page.value].records.length
 
-    if (!pageExists) {
+    if (!pageExists || this.state.newSortKey) {
       const {results, isFinalPage, cacheKey} = await fetchGet(rushStatsEndpoint, [page, pageSize, sortKey, filterString])
       const shouldClearStore = cacheKey != rushRecords.cacheKey
-      if (shouldClearStore) {
+      if (shouldClearStore  || this.state.newSortKey) {
         const payload = {
           page: this.state.page.value,
           records: results,
@@ -54,20 +53,36 @@ class RushRecordsContainer extends React.Component {
           isFinalPage
         }
         resetRushRecords(payload)(this.props.dispatch)
-        this.setState({ shouldUpdateJson: true })
       } else {
         this.props.dispatch(addPage(this.state.page.value, results, isFinalPage))
       }
     }
 
-    this.setState({ shouldUpdatePage: false })
+    this.setState({ shouldUpdatePage: false, newSortKey: false })
   }
 
   async fetchAllRecords() {
     const { sortKey, filterString } = this.state
-    const {results} = await fetchGet(rushStatsEndpoint, [sortKey, filterString])
+    const {rushRecords} = this.props
+    const {results, cacheKey} = await fetchGet(rushStatsEndpoint, [sortKey, filterString])
+
     this.props.dispatch(addAllRecordsJson(results))
-    this.setState({ shouldUpdateJson: false })
+
+    const shouldClearStore = cacheKey != rushRecords.cacheKey
+      if (shouldClearStore) {
+        const page = this.state.page.value
+        const pageStart = page * defaultPageSize
+        const pageResults = results.slice(pageStart, pageStart + defaultPageSize)
+        const payload = {
+          page,
+          records: pageResults,
+          cacheKey,
+          isFinalPage
+        }
+        resetRushRecords(payload)(this.props.dispatch)
+      }
+
+    return results
   }
 
   onInputChange(event) {
@@ -76,20 +91,19 @@ class RushRecordsContainer extends React.Component {
     });
   }
 
-  onSortChange(sortKey) {
-    if (sortKey != this.state.sortKey.value)
+  async onSortChange(sortKey) {
+    if (sortKey != this.state.sortKey.value) {
       this.setState({
         page: {key: 'page', value: 0},
         sortKey: {key: 'sortKey', value: sortKey},
-        shouldUpdatePage: true,
-        shouldUpdateJson: true
+        newSortKey: true
       })
+    }
   }
 
   onSearch() {
     this.setState({
       shouldUpdatePage: true,
-      shouldUpdateJson: true,
       page: {key: 'page', value: 0}
     })
   }
@@ -108,6 +122,25 @@ class RushRecordsContainer extends React.Component {
         shouldUpdatePage: true}
       )
     }
+  }
+
+  async onDownload() {
+    const allRushRecords = this.props.rushRecords.allRushRecords || await this.fetchAllRecords()
+    const options = { 
+      fieldSeparator: ',',
+      quoteStrings: '"',
+      decimalSeparator: '.',
+      showLabels: true, 
+      showTitle: true,
+      title: 'NFL Rush Records',
+      useTextFile: false,
+      useBom: true,
+      useKeysAsHeaders: true,
+      // headers: ['Column 1', 'Column 2', etc...] <-- Won't work with useKeysAsHeaders present!
+    };
+    const csvExporter = new ExportToCsv(options);
+    
+    csvExporter.generateCsv(allRushRecords)
   }
 
   render() {
@@ -150,7 +183,7 @@ class RushRecordsContainer extends React.Component {
             </div>
           </div>
           <div className='results-toolbar'>
-            { rushRecords.allRecords && !this.state.shouldUpdateJson && <CsvDownloadLink /> }
+            <button className="download-button" onClick={this.onDownload.bind(this)}> Download CSV </button>
             <span className="paging-toolbar">
               {`Page: ${this.state.page.value + 1}`}
               {this.state.page.value > 0 && <button className="paging-button" onClick={() => this.onPage(directions.BACK)}> Previous Page </button>}
