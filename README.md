@@ -3,6 +3,8 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 To run with Docker: 
 
+git clone https://github.com/licarijd/the-rush
+
 docker build -t licarijd/the-rush the-rush
 
 docker run -p 8081:8081 -d licarijd/the-rush
