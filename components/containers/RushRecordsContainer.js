@@ -18,10 +18,10 @@ class RushRecordsContainer extends React.Component {
   constructor() {
     super()
     this.state = {
-      page: {key: 'page', value: 0},
-      pageSize: {key: 'pageSize', value: defaultPageSize},
-      sortKey: {key: 'sortKey', value: 'Yds'},
-      filterString: {key: 'filterString', value: ''},
+      page: { key: 'page', value: 0 },
+      pageSize: { key: 'pageSize', value: defaultPageSize },
+      sortKey: { key: 'sortKey', value: 'Yds' },
+      filterString: { key: 'filterString', value: '' },
       shouldUpdatePage: false,
       isFinalPage: false,
       newResults: false
@@ -32,28 +32,37 @@ class RushRecordsContainer extends React.Component {
     this.updatePage()
   }
 
-  componentDidUpdate() {
-    if (this.state.shouldUpdatePage || this.state.newResults)
-      this.updatePage()
+  async componentDidUpdate() {
+    console.log(this.state)
+    if (this.state.shouldUpdatePage) {
+      await this.updatePage()
+      this.setState({
+        newResults: false,
+        shouldUpdatePage: false
+      })
+    }
+    if (this.state.newResults) {
+      await this.updatePage(true)
+      this.setState({
+        newResults: false})
+    }
   }
 
-  async updatePage() {
-    const { page, newResults } = this.state
+  async updatePage(newResults) {
+    const { page } = this.state
     const { rushRecords } = this.props
     const pageExists = rushRecords[page.value] && rushRecords[page.value].records && rushRecords[page.value].records.length
 
     if (newResults) {
       const {results, isFinalPage, cacheKey} = await this.fetchPage()
-
-      this.setState({ newResults: false })
-      this.resetDataStore(this.state.page.value, results, cacheKey, isFinalPage)
+      this.resetDataStore(0, results, cacheKey, isFinalPage)
+      this.setState({ page: { key: 'page', value: 0 } })
+      
     } else if (!pageExists) {
       const pageData = await this.fetchPage()
       
       this.updateDataStore(pageData)
     }
-
-    this.setState({ shouldUpdatePage: false })
   }
 
   updateDataStore(pageData, shouldUpdateAllRecords) {
@@ -114,8 +123,8 @@ class RushRecordsContainer extends React.Component {
   async onSortChange(sortKey) {
     if (sortKey != this.state.sortKey.value) {
       this.setState({
+        sortKey: { key: 'sortKey', value: sortKey },
         page: {key: 'page', value: 0},
-        sortKey: {key: 'sortKey', value: sortKey},
         newResults: true
       })
     }
