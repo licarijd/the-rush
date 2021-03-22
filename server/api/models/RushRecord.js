@@ -9,7 +9,7 @@ class RushRecord {
     this.Avg = rushData.Avg
     this.Yds_G = rushData['Yds/G']
     this.TD = rushData.TD
-    this.Lng = rushData.toString()
+    this.Lng = rushData.Lng.toString()
     this.first = rushData['1st']
     this.firstPercent = rushData['1st%']
     this.twentyPlus = rushData['20+']
