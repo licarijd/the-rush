@@ -1,7 +1,7 @@
 const Express = require('express');
 const router = Express.Router();
 const { getPage, getRushStats, sortRushStats, filterRushStats } = require("../services/RushStatsService");
-const { VALID_SORT_KEYS } = require("../../constants/constants");
+const { VALID_SORT_KEYS, API_STATUS } = require("../../constants/constants");
 const httpStatus = require('http-status');
 const Error = require('../models/Error');
 
@@ -26,8 +26,7 @@ const prepareRecords = (records, filterString, sortKey) => {
   if (filterString)
     results = filterRushStats(filterString, results)
 
-  if (sortKey)
-    results = sortRushStats(sortKey, results)
+  results = sortRushStats(sortKey, results)
 
   return results
 }
@@ -43,17 +42,24 @@ router.get('*', async (request, response) => {
   let { page, pageSize } = request.query
 
   if (page && !/^\d+$/.test(page)) {
-    new Error(httpStatus.BAD_REQUEST, 'page must be a number').send(response);
+    new Error(httpStatus.BAD_REQUEST, API_STATUS.INVALID_PAGE).send(response);
     return
   }
 
-  if (page && !/^\d+$/.test(pageSize)) {
-    new Error(httpStatus.BAD_REQUEST, 'pageSize must be a number').send(response);
+  if (page && !pageSize) {
+    new Error(httpStatus.BAD_REQUEST, API_STATUS.MISSING_PAGE_SIZE).send(response);
+    return
+  }
+
+  const isNonNumericPageSize = !/^\d+$/.test(pageSize)
+
+  if (page && isNonNumericPageSize) {
+    new Error(httpStatus.BAD_REQUEST, API_STATUS.INVALID_PAGE_SIZE).send(response);
     return
   }
 
   if (!VALID_SORT_KEYS.has(sortKey)) {
-    new Error(httpStatus.BAD_REQUEST, 'Invalid sort key').send(response);
+    new Error(httpStatus.BAD_REQUEST, API_STATUS.INVALID_SORT_KEY).send(response);
     return
   }
 
