@@ -11,6 +11,8 @@ Run the following commands in your terminal:
 
 3) docker run -p 8081:8081 -d licarijd/the-rush
 
+Open your browser to http://localhost:8081/ (takes a few seconds to start)
+
 
 ## **Design Decisions**
 
