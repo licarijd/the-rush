@@ -145,7 +145,7 @@ class RushRecordsContainer extends React.Component {
   }
 
   async onDownload() {
-    const allRushRecords = this.props.rushRecords.allRushRecords || await this.fetchAllRecords()
+    const allRushRecords = this.props.rushRecords.allRecords || await this.fetchAllRecords()
     const options = { 
       fieldSeparator: ',',
       quoteStrings: '"',
@@ -196,9 +196,21 @@ class RushRecordsContainer extends React.Component {
           <div className="toolbar"> Sort By: 
             <div>
               <span>
-                <button className="order-by-button" onClick={() => this.onSortChange('Yds')}> Total Rushing Yards </button>
-                <button className="order-by-button" onClick={() => this.onSortChange('Lng')}> Longest Rush </button>
-                <button className="order-by-button" onClick={() => this.onSortChange('TD')}> Total Rushing Touchdowns </button>
+                <button
+                  className={`order-by-button ${this.state.sortKey.value == 'Yds' ? 'highlighted' : ''}`}
+                  onClick={() => this.onSortChange('Yds')}>
+                    Total Rushing Yards
+                  </button>
+                <button
+                  className={`order-by-button ${this.state.sortKey.value == 'Lng' ? 'highlighted' : ''}`}
+                  onClick={() => this.onSortChange('Lng')}>
+                    Longest Rush
+                </button>
+                <button
+                  className={`order-by-button ${this.state.sortKey.value == 'TD' ? 'highlighted' : ''}`}
+                  onClick={() => this.onSortChange('TD')}>
+                    Total Rushing Touchdowns
+                </button>
               </span>
             </div>
           </div>

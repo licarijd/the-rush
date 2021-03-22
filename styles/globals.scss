@@ -659,6 +659,10 @@ button[type="reset"]:hover {
   border: black;
   border-radius: 25px;
   border-style: solid;
+
+  &.highlighted {
+    background-color:#3d3e3f;
+  }
 }
 
 .search-button {
