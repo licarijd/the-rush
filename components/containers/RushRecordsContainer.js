@@ -45,11 +45,11 @@ class RushRecordsContainer extends React.Component {
     if (newResults) {
       const {results, isFinalPage, cacheKey} = await this.fetchPage()
 
-      this.setState({ newResults: false })
+      this.setState({ newResults: false, isFinalPage })
       this.resetDataStore(this.state.page.value, results, cacheKey, isFinalPage)
     } else if (!pageExists) {
       const pageData = await this.fetchPage()
-      
+      this.setState({ isFinalPage: pageData.isFinalPage })
       this.updateDataStore(pageData)
     }
 
@@ -61,14 +61,18 @@ class RushRecordsContainer extends React.Component {
     const { rushRecords } = this.props
     const shouldClearStore = cacheKey != rushRecords.cacheKey
 
-    if (shouldClearStore) {
-      const page = this.state.page.value
-      const pageResults = shouldUpdateAllRecords 
-        ? results.slice(page * defaultPageSize, (page * defaultPageSize) + defaultPageSize)
-        : results
-      this.resetDataStore(this.state.page.value, pageResults, cacheKey, isFinalPage)
+    if (shouldUpdateAllRecords) {
+      if (shouldClearStore) {
+        const page = this.state.page.value
+        const pageResults = shouldUpdateAllRecords 
+          ? results.slice(page * defaultPageSize, (page * defaultPageSize) + defaultPageSize)
+          : results
+        this.resetDataStore(this.state.page.value, pageResults, cacheKey, shouldUpdateAllRecords ? this.state.isFinalPage : isFinalPage)
+      } else {
+        this.props.dispatch(addAllRecordsJson(results))
+      }
     } else {
-      this.props.dispatch(addPage(this.state.page.value, results, isFinalPage))
+      this.props.dispatch(addPage(this.state.page.value, results, shouldUpdateAllRecords ? this.state.isFinalPage : isFinalPage))
     }
   }
 
