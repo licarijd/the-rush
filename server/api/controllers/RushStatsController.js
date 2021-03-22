@@ -38,7 +38,7 @@ const isFinalPage = (page, pageSize, results) => {
 
 router.get('*', async (request, response) => {
   const { sortKey } = request.query
-  let filterString = request.query.filterString && request.query.filterString.replace(/[^A-Za-z]+/g, '')
+  let filterString = request.query.filterString && request.query.filterString.replace(/[^A-Za-z ]+/g, '')
   let { page, pageSize } = request.query
 
   if (page && !/^\d+$/.test(page)) {

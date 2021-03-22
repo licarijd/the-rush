@@ -99,7 +99,7 @@ class RushRecordsContainer extends React.Component {
 
   onInputChange(event) {
     const newState = {}
-    const sanitizedString = event.target.value.replace(/[^A-Za-z]+/g, '')
+    const sanitizedString = event.target.value.replace(/[^A-Za-z ]+/g, '')
 
     newState.filterString = {key: 'filterString', value: sanitizedString}
 
