@@ -2,7 +2,6 @@ import React from "react";
 import { connect } from 'react-redux'
 import { fetchGet } from "../../client/api/nflRushStatsAPI";
 import { addAllRecordsJson, addPage, resetRushRecords } from "../../client/actions/RushRecordsActions"
-import Record from "../Record";
 import PropTypes from 'prop-types';
 import { bindActionCreators } from 'redux'
 import { ExportToCsv } from 'export-to-csv';
@@ -171,65 +170,83 @@ class RushRecordsContainer extends React.Component {
     const { rushRecords } = this.props
     const page = this.state.page.value
     const isFinalPage = rushRecords && rushRecords[page] && rushRecords[page].isFinalPage
-    const Records = rushRecords && rushRecords[page] && rushRecords[page].records && rushRecords[page].records.map(record =>
-      <li key={record.Player}>
-        <Record
-          player={record.Player}
-          team={record.Team}
-          position={record.Pos}
-          rushingAttemptsAverage={record.Att_G}
-          rushingAttempts={record.Att}
-          yards={record.Yds}
-          averageRushingYards={record.Avg}
-          rushingYardsPerGame={record.Yds_G}
-          totalRushingTouchdowns={record.TD}
-          longestRush={record.Lng}
-          rushingFirstDowns={record.first}
-          rushingFirstDownsPercentage={record.firstPercent}
-          twentyPlusYardsEach={record.twentyPlus}
-          fortyPlusYardsEach={record.fortyPlus}
-          rushingFumbles={record.FUM}
-        />
-      </li>);
+    const tableRows = rushRecords && rushRecords[page] && rushRecords[page].records && rushRecords[page].records.map(record =>
+      <tr>
+        <td> {record.Player} </td>
+        <td> {record.Team} </td>
+        <td> {record.Pos} </td>
+        <td> {record.Att_G} </td>
+        <td> {record.Att} </td>
+        <td> {record.Yds} </td>
+        <td> {record.Avg} </td>
+        <td> {record.Yds_G} </td>
+        <td> {record.TD} </td>
+        <td> {record.Lng} </td>
+        <td> {record.first} </td>
+        <td> {record.firstPercent} </td>
+        <td> {record.twentyPlus} </td>
+        <td> {record.fortyPlus} </td>
+        <td> {record.FUM} </td>
+      </tr>
+    )
 
-      return (
-        <div className="page">
-          <h1> NFL Rush Records </h1>
-          <input type="text" id="fname" name="fname" placeholder="Search for a player..." onChange={this.onInputChange.bind(this)}></input>
-          <button className="search-button" onClick={this.onSearch.bind(this)}> Search </button>
-          <div className="toolbar"> Sort By: 
-            <div>
-              <span>
-                <button
-                  className={`order-by-button ${this.state.sortKey.value == 'Yds' ? 'highlighted' : ''}`}
-                  onClick={() => this.onSortChange('Yds')}>
-                    Total Rushing Yards
-                  </button>
-                <button
-                  className={`order-by-button ${this.state.sortKey.value == 'Lng' ? 'highlighted' : ''}`}
-                  onClick={() => this.onSortChange('Lng')}>
-                    Longest Rush
+    return (
+      <div className="page">
+        <h1> NFL Rush Records </h1>
+        <input type="text" id="fname" name="fname" placeholder="Search for a player..." onChange={this.onInputChange.bind(this)}></input>
+        <button className="search-button" onClick={this.onSearch.bind(this)}> Search </button>
+        <div className="toolbar"> Sort By: 
+          <div>
+            <span>
+              <button
+                className={`order-by-button ${this.state.sortKey.value == 'Yds' ? 'highlighted' : ''}`}
+                onClick={() => this.onSortChange('Yds')}>
+                  Total Rushing Yards
                 </button>
-                <button
-                  className={`order-by-button ${this.state.sortKey.value == 'TD' ? 'highlighted' : ''}`}
-                  onClick={() => this.onSortChange('TD')}>
-                    Total Rushing Touchdowns
-                </button>
-              </span>
-            </div>
+              <button
+                className={`order-by-button ${this.state.sortKey.value == 'Lng' ? 'highlighted' : ''}`}
+                onClick={() => this.onSortChange('Lng')}>
+                  Longest Rush
+              </button>
+              <button
+                className={`order-by-button ${this.state.sortKey.value == 'TD' ? 'highlighted' : ''}`}
+                onClick={() => this.onSortChange('TD')}>
+                  Total Rushing Touchdowns
+              </button>
+            </span>
           </div>
-          <div className='results-toolbar'>
-            <button className="download-button" onClick={this.onDownload.bind(this)}> Download CSV </button>
-            <span className="paging-toolbar">
-              {`Page: ${this.state.page.value + 1}`}
-              {this.state.page.value > 0 && <button className="paging-button" onClick={() => this.onPage(directions.BACK)}> Previous Page </button>}
-              {!isFinalPage && <button className="paging-button" onClick={() => this.onPage(directions.FORWARD)}> Next Page </button>}
-            </span>  
-          </div>
-          {Records}
         </div>
-      );
-   }
+        <div className='results-toolbar'>
+          <button className="download-button" onClick={this.onDownload.bind(this)}> Download CSV </button>
+          <span className="paging-toolbar">
+            {`Page: ${this.state.page.value + 1}`}
+            {this.state.page.value > 0 && <button className="paging-button" onClick={() => this.onPage(directions.BACK)}> Previous Page </button>}
+            {!isFinalPage && <button className="paging-button" onClick={() => this.onPage(directions.FORWARD)}> Next Page </button>}
+          </span>  
+        </div>
+        <table className='table'>
+          <tr>
+            <th className='table-header'>Player</th>
+            <th className='table-header'>Team</th>
+            <th className='table-header'>Position</th>
+            <th className='table-header'>Rushing Attempts Average</th>
+            <th className='table-header'>Rushing Attempts</th>
+            <th className='table-header'>Yards</th>
+            <th className='table-header'>Average Rushing Yards</th>
+            <th className='table-header'>Rushing Yards Per Game</th>
+            <th className='table-header'>Total Rushing Touchdowns</th>
+            <th className='table-header'>Longest Rush</th>
+            <th className='table-header'>Rushing First Downs</th>
+            <th className='table-header'>Rushing First Downs Percentage</th>
+            <th className='table-header'>Twenty Plus Yards Each</th>
+            <th className='table-header'>Forty Plus Yards Each</th>
+            <th className='table-header'>Rushing Fumbles</th>
+          </tr>
+          { tableRows }
+        </table>
+      </div>
+    );
+  }
 }
 
 RushRecordsContainer.propTypes = {

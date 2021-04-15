@@ -454,7 +454,7 @@ input[type="button"]:focus-visible {
 /* Tables
 ––––––––––––––––––––––––––––––––– */
 table {
-  width: 100%;
+  width: 150%;
   border-spacing: 0;
   margin-bottom: 1.563rem;
   font-variant-numeric: tabular-nums;
@@ -464,6 +464,9 @@ th,
 td {
   padding: 0.5rem 0.5rem 0.5rem 0;
   margin: 0;
+  width: 5%;
+  margin-right: 2vw;
+  padding-left: 2vw;
 }
 
 th {
@@ -695,4 +698,12 @@ button[type="reset"]:hover {
 .paging-button {
   top: 50%;
   margin-left: 1vw;
+}
+
+.table {
+  width: 180%;
+}
+
+.table-header {
+  color: white !important;
 }
