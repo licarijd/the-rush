@@ -1,16 +1,16 @@
 const Express = require('express');
 const router = Express.Router();
 const { getPage, getRushStats, sortRushStats, filterRushStats } = require("../services/RushStatsService");
-const { VALID_SORT_KEYS, API_STATUS } = require("../../constants/constants");
+const { VALID_SORT_KEYS, API_STATUS, SORT_ORDER } = require("../../constants/constants");
 const httpStatus = require('http-status');
 const Error = require('../models/Error');
 
-const getRushStatsData = async (filterString, sortKey, page, pageSize) => {
+const getRushStatsData = async (filterString, sortKey, ord, page, pageSize) => {
   let statsCache = await getRushStats()
   let records = statsCache && statsCache.records
 
   const rushStatsData = {}
-  const results = prepareRecords(records, filterString, sortKey)
+  const results = prepareRecords(records, filterString, sortKey, ord)
   const isValidPage = (page || page === 0)
   const resultsPage = isValidPage ? getPage(results, page, pageSize) : results
 
@@ -21,12 +21,12 @@ const getRushStatsData = async (filterString, sortKey, page, pageSize) => {
   return rushStatsData
 }
 
-const prepareRecords = (records, filterString, sortKey) => {
+const prepareRecords = (records, filterString, sortKey, ord) => {
   let results = [...records]
   if (filterString)
     results = filterRushStats(filterString, results)
 
-  results = sortRushStats(sortKey, results)
+  results = sortRushStats(sortKey, results, ord)
 
   return results
 }
@@ -37,7 +37,7 @@ const isFinalPage = (page, pageSize, results) => {
 }
 
 router.get('*', async (request, response) => {
-  const { sortKey } = request.query
+  const { sortKey, ord } = request.query
   let filterString = request.query.filterString && request.query.filterString.replace(/[^A-Za-z ]+/g, '')
   let { page, pageSize } = request.query
 
@@ -48,6 +48,11 @@ router.get('*', async (request, response) => {
 
   if (page && !pageSize) {
     new Error(httpStatus.BAD_REQUEST, API_STATUS.MISSING_PAGE_SIZE).send(response);
+    return
+  }
+
+  if (ord && ord != SORT_ORDER.DESC && ord != SORT_ORDER.ASC) {
+    new Error(httpStatus.BAD_REQUEST, API_STATUS.INVALID_ORDER).send(response);
     return
   }
 
@@ -67,7 +72,7 @@ router.get('*', async (request, response) => {
   pageSize = parseInt(request.query.pageSize)
 
   try {
-    const rushStatsData = await getRushStatsData(filterString, sortKey, page, pageSize)
+    const rushStatsData = await getRushStatsData(filterString, sortKey, ord, page, pageSize)
 
     response.send(rushStatsData)
   } catch (e) {

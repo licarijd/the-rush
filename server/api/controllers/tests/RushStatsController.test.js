@@ -44,6 +44,14 @@ describe('Rush Stats controller', () => {
         done()
       })
     })
+    test('It should return a 400 response with an invalid order key', done => {
+      request(testAPI).get(`${path}?ord=TDI`).then(res => {
+        expect(res.statusCode).toBe(HTTPStatus.BAD_REQUEST)
+        expect(res.body.status).toBe('error')
+        expect(res.body.message).toBe(API_STATUS.INVALID_ORDER)
+        done()
+      })
+    })
     test('It should return a 400 response with a missing sort key', done => {
       request(testAPI).get(`${path}`).then(res => {
         expect(res.statusCode).toBe(HTTPStatus.BAD_REQUEST)
@@ -234,6 +242,58 @@ describe('Rush Stats controller', () => {
           done()
         })
       })
+      test('It should return 3 results with a pageSize of 10 with results sorted by Rushing Average Yards Per Attempt', done => {
+        const touchDownIndicator = 'T'
+        const stringToNumber = key => parseFloat(key.replace(touchDownIndicator, '').replace(',', ''))
+
+        request(testAPI).get(`${path}?sortKey=Avg&page=0&pageSize=10`).then(res => {
+          const { results } = res.body
+          expect(res.statusCode).toBe(HTTPStatus.OK)
+          expect(results.length).toBe(10)
+          expect(res.body).toEqual(expect.objectContaining(expectedBody))
+
+          for (let i = 1; i < results.length; i++) {
+            let keyA = results[i - 1].Avg
+            let keyB = results[i].Avg
+
+            if (keyA.replace)
+              keyA = stringToNumber(keyA)
+
+            if (keyB.replace)
+              keyB = stringToNumber(keyB)
+
+            expect(keyB).toBeLessThanOrEqual(keyA)
+          }
+
+          done()
+        })
+      })
+      /*test('It should return 3 results with a pageSize of 10 with results sorted by Rushing Average Yards Per Attempt in ascending order', done => {
+        const touchDownIndicator = 'T'
+        const stringToNumber = key => parseFloat(key.replace(touchDownIndicator, '').replace(',', ''))
+
+        request(testAPI).get(`${path}?sortKey=Avg&ord=ASC&page=0&pageSize=10`).then(res => {
+          const { results } = res.body
+          expect(res.statusCode).toBe(HTTPStatus.OK)
+          expect(results.length).toBe(3)
+          expect(res.body).toEqual(expect.objectContaining(expectedBody))
+
+          for (let i = 1; i < results.length; i++) {
+            let keyA = results[i - 1].Avg
+            let keyB = results[i].Avg
+
+            if (keyA.replace)
+              keyA = stringToNumber(keyA)
+
+            if (keyB.replace)
+              keyB = stringToNumber(keyB)
+
+            expect(keyB).toBeGreaterThanOrEqual(keyA)
+          }
+
+          done()
+        })
+      })*/
       test('It indicate that a page is the last page when the page size is 10', done => {
         request(testAPI).get(`${path}?sortKey=Yds&page=32&pageSize=10`).then(res => {
           const { results, isFinalPage } = res.body

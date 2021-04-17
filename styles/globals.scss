@@ -473,7 +473,7 @@ th {
   font-weight: bold;
   text-align: left;
   border-bottom: 2px solid var(--gray-300);
-  color: var(--gray-300);
+  color: black;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -702,8 +702,4 @@ button[type="reset"]:hover {
 
 .table {
   width: 180%;
-}
-
-.table-header {
-  color: white !important;
 }

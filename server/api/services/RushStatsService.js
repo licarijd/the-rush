@@ -2,6 +2,7 @@ const RushRecord = require("../models/RushRecord")
 const RushRecordsCache = require("../models/RushRecordsCache")
 const requestRushStats = require("../repositories/RushStatsRepository")
 const { filterNameByString, compareByKey } = require("../utils/SortUtils")
+const { SORT_ORDER } = require("../../constants/constants");
 
 let RUSH_STATS_CACHE
 
@@ -14,7 +15,11 @@ const getRushStats = async () => {
   return RUSH_STATS_CACHE
 }
 
-const sortRushStats = (sortKey, records) => records.sort(compareByKey(sortKey))
+const sortRushStats = (
+  sortKey,
+  records,
+  ord = SORT_ORDER.DESC
+) => records.sort(compareByKey(sortKey, ord))
 
 const filterRushStats = (filterString, records) => records.filter(record => filterNameByString(record, filterString))
 
