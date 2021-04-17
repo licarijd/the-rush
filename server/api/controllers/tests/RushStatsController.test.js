@@ -135,7 +135,7 @@ describe('Rush Stats controller', () => {
           expect(res.body).toEqual(expect.objectContaining(expectedBody))
 
           for (let i = 1; i < results.length; i++) {
-            const compareResult = compareByKey('Lng')(results[i - 1], results[i])
+            const compareResult = compareByKey('Lng', 'DESC')(results[i - 1], results[i])
             expect(compareResult.toString()).toMatch(/^0|-1$/)
           }
 
@@ -192,7 +192,7 @@ describe('Rush Stats controller', () => {
           expect(res.body).toEqual(expect.objectContaining(expectedBody))
 
           for (let i = 1; i < results.length; i++) {
-            const compareResult = compareByKey('Lng')(results[i - 1], results[i])
+            const compareResult = compareByKey('Lng', 'DESC')(results[i - 1], results[i])
             expect(compareResult.toString()).toMatch(/^0|-1$/)
           }
 
@@ -209,7 +209,7 @@ describe('Rush Stats controller', () => {
           expect(res.body).toEqual(expect.objectContaining(expectedBody))
 
           for (let i = 1; i < results.length; i++) {
-            const compareResult = compareByKey('Lng')(results[i - 1], results[i])
+            const compareResult = compareByKey('Lng', 'DESC')(results[i - 1], results[i])
             expect(compareResult.toString()).toMatch(/^0|-1$/)
           }
 

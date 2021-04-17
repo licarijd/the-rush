@@ -1,10 +1,11 @@
 const { compareByKey, filterNameByString } = require("../SortUtils")
+const { SORT_ORDER } = require("../../../constants/constants");
 
 describe('SortUtils', () => {
 
   describe('compareByKey', () => {
 
-    it(`Returns -1 when the first item's key is lesser than the second`, () => {
+    it(`Returns -1 when the first item's key is lesser than the second in descending order`, () => {
 
       const itemA = {
         key: 2
@@ -19,8 +20,27 @@ describe('SortUtils', () => {
         key: 1
       }
 
-      expect(compareByKey('key')(itemA, itemB)).toEqual(-1)
-      expect(compareByKey('key')(itemC, itemD)).toEqual(-1)
+      expect(compareByKey('key', SORT_ORDER.DESC)(itemA, itemB)).toEqual(-1)
+      expect(compareByKey('key', SORT_ORDER.DESC)(itemC, itemD)).toEqual(-1)
+    })
+
+    it(`Returns -1 when the first item's key is lesser than the second in ascending order`, () => {
+
+      const itemA = {
+        key: 2
+      }
+      const itemB = {
+        key: 1
+      }
+      const itemC = {
+        key: '2T'
+      }
+      const itemD = {
+        key: 1
+      }
+
+      expect(compareByKey('key', SORT_ORDER.ASC)(itemB, itemA)).toEqual(-1)
+      expect(compareByKey('key', SORT_ORDER.ASC)(itemD, itemC)).toEqual(-1)
     })
 
     it(`Returns 0 when the first item's key is equal to the second`, () => {
@@ -35,7 +55,7 @@ describe('SortUtils', () => {
       expect(compareByKey('key')(itemA, itemB)).toEqual(0)
     })
 
-    it(`Returns 1 when the first item's key is greater than the second`, () => {
+    it(`Returns 1 when the first item's key is greater than the second in descending order`, () => {
 
       const itemA = {
         key: 2
@@ -50,8 +70,27 @@ describe('SortUtils', () => {
         key: '13T'
       }
 
-      expect(compareByKey('key')(itemA, itemB)).toEqual(1)
-      expect(compareByKey('key')(itemC, itemD)).toEqual(1)
+      expect(compareByKey('key', SORT_ORDER.DESC)(itemA, itemB)).toEqual(1)
+      expect(compareByKey('key', SORT_ORDER.DESC)(itemC, itemD)).toEqual(1)
+    })
+
+    it(`Returns 1 when the first item's key is greater than the second in ascending order`, () => {
+
+      const itemA = {
+        key: 2
+      }
+      const itemB = {
+        key: 3
+      }
+      const itemC = {
+        key: 2
+      }
+      const itemD = {
+        key: '13T'
+      }
+
+      expect(compareByKey('key', SORT_ORDER.ASC)(itemB, itemA)).toEqual(1)
+      expect(compareByKey('key', SORT_ORDER.ASC)(itemD, itemC)).toEqual(1)
     })
   })
 
