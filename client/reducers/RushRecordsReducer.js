@@ -1,6 +1,6 @@
 import { ADD_RUSH_RECORDS_JSON, ADD_RUSH_RECORD_PAGE, CLEAR_ALL_RECORDS, UPDATE_CACHE_KEY } from '../actions/RushRecordsActions'
 
-export const initialState = {
+const initialState = {
   cacheKey: ''
 }
 
