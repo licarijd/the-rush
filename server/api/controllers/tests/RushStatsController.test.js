@@ -52,14 +52,6 @@ describe('Rush Stats controller', () => {
         done()
       })
     })
-    test('It should return a 400 response with a missing sort key', done => {
-      request(testAPI).get(`${path}`).then(res => {
-        expect(res.statusCode).toBe(HTTPStatus.BAD_REQUEST)
-        expect(res.body.status).toBe('error')
-        expect(res.body.message).toBe(API_STATUS.INVALID_SORT_KEY)
-        done()
-      })
-    })
     test('It should return a 400 response with an invalid page', done => {
       request(testAPI).get(`${path}?sortKey=TD&page=2a`).then(res => {
         expect(res.statusCode).toBe(HTTPStatus.BAD_REQUEST)
@@ -189,6 +181,36 @@ describe('Rush Stats controller', () => {
           const { results } = res.body
           expect(res.statusCode).toBe(HTTPStatus.OK)
           expect(results.length).toBe(5)
+          expect(res.body).toEqual(expect.objectContaining(expectedBody))
+
+          for (let i = 1; i < results.length; i++) {
+            const compareResult = compareByKey('Lng', 'DESC')(results[i - 1], results[i])
+            expect(compareResult.toString()).toMatch(/^0|-1$/)
+          }
+
+          done()
+        })
+      })
+      test('It should return all results sorted by Longest Rush, from the team NYJ', done => {
+        request(testAPI).get(`${path}?sortKey=Lng&teamFilter=NYJ&page=0&pageSize=100`).then(res => {
+          const { results } = res.body
+          expect(res.statusCode).toBe(HTTPStatus.OK)
+          expect(results.length).toBe(12)
+          expect(res.body).toEqual(expect.objectContaining(expectedBody))
+
+          for (let i = 1; i < results.length; i++) {
+            const compareResult = compareByKey('Lng', 'DESC')(results[i - 1], results[i])
+            expect(compareResult.toString()).toMatch(/^0|-1$/)
+          }
+
+          done()
+        })
+      })
+      test('It should return all results sorted by Longest Rush, from the team NYJ with the name Brandon', done => {
+        request(testAPI).get(`${path}?sortKey=Lng&filterString=Brandon&teamFilter=NYJ&page=0&pageSize=100`).then(res => {
+          const { results } = res.body
+          expect(res.statusCode).toBe(HTTPStatus.OK)
+          expect(results.length).toBe(2)
           expect(res.body).toEqual(expect.objectContaining(expectedBody))
 
           for (let i = 1; i < results.length; i++) {

@@ -1,16 +1,16 @@
 const Express = require('express');
 const router = Express.Router();
 const { getPage, getRushStats, sortRushStats, filterRushStats } = require("../services/RushStatsService");
-const { VALID_SORT_KEYS, API_STATUS, SORT_ORDER } = require("../../constants/constants");
+const { VALID_SORT_KEYS, API_STATUS, SORT_ORDER, filterOptions } = require("../../constants/constants");
 const httpStatus = require('http-status');
 const Error = require('../models/Error');
 
-const getRushStatsData = async (filterString, sortKey, ord, page, pageSize) => {
+const getRushStatsData = async (filters, sortKey, ord, page, pageSize) => {
   let statsCache = await getRushStats()
   let records = statsCache && statsCache.records
 
   const rushStatsData = {}
-  const results = prepareRecords(records, filterString, sortKey, ord)
+  const results = prepareRecords(records, filters, sortKey, ord)
   const isValidPage = (page || page === 0)
   const resultsPage = isValidPage ? getPage(results, page, pageSize) : results
 
@@ -21,10 +21,13 @@ const getRushStatsData = async (filterString, sortKey, ord, page, pageSize) => {
   return rushStatsData
 }
 
-const prepareRecords = (records, filterString, sortKey, ord) => {
+const prepareRecords = (records, filters, sortKey, ord) => {
   let results = [...records]
-  if (filterString)
-    results = filterRushStats(filterString, results)
+  if (filters && filters.nameFilter)
+    results = filterRushStats(filters.nameFilter, filterOptions.name, results)
+
+  if (filters && filters.teamFilter)
+    results = filterRushStats(filters.teamFilter, filterOptions.team, results)
 
   results = sortRushStats(sortKey, results, ord)
 
@@ -39,6 +42,11 @@ const isFinalPage = (page, pageSize, results) => {
 router.get('*', async (request, response) => {
   const { sortKey, ord } = request.query
   let filterString = request.query.filterString && request.query.filterString.replace(/[^A-Za-z ]+/g, '')
+  let teamFilter = request.query.teamFilter && request.query.teamFilter.replace(/[^A-Za-z ]+/g, '')
+  const filters = {
+    nameFilter: filterString,
+    teamFilter
+  }
   let { page, pageSize } = request.query
 
   if (page && !/^\d+$/.test(page)) {
@@ -72,7 +80,7 @@ router.get('*', async (request, response) => {
   pageSize = parseInt(request.query.pageSize)
 
   try {
-    const rushStatsData = await getRushStatsData(filterString, sortKey, ord, page, pageSize)
+    const rushStatsData = await getRushStatsData(filters, sortKey, ord, page, pageSize)
 
     response.send(rushStatsData)
   } catch (e) {

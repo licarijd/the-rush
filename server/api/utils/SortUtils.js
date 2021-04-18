@@ -26,7 +26,7 @@ const compareByKey = (key, ord) => (a, b) => {
   return 0
 }
 
-const filterNameByString = (record, filterString) => record.Player.toLowerCase().startsWith(filterString.toLowerCase())
+const filterNameByString = (record, attribute, filterString) => record[attribute].toLowerCase().startsWith(filterString.toLowerCase())
 
 module.exports = {
   compareByKey,

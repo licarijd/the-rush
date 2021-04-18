@@ -5,6 +5,10 @@ module.exports = {
     ASC: 'ASC',
     DESC: 'DESC'
   },
+  filterOptions: {
+    name: 'Player',
+    team: 'Team'
+  },
   API_STATUS: {
     INVALID_SORT_KEY: 'Invalid sort key',
     INVALID_PAGE: 'Invalid page - page must be a number',

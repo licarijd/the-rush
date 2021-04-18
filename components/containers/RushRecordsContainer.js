@@ -21,6 +21,7 @@ class RushRecordsContainer extends React.Component {
       pageSize: {key: 'pageSize', value: defaultPageSize},
       sortKey: {key: 'sortKey', value: 'Yds'},
       filterString: {key: 'filterString', value: ''},
+      teamFilter: {key: 'teamFilter', value: ''},
       shouldUpdatePage: false,
       isFinalPage: false,
       newResults: false
@@ -86,8 +87,8 @@ class RushRecordsContainer extends React.Component {
   }
 
   async fetchAllRecords() {
-    const { sortKey, filterString } = this.state
-    const page = await fetchGet(rushStatsEndpoint, [sortKey, filterString])
+    const { sortKey, filterString, teamFilter } = this.state
+    const page = await fetchGet(rushStatsEndpoint, [sortKey, filterString, teamFilter])
 
     this.props.dispatch(addAllRecordsJson(page.results))
     this.updateDataStore(page, true)
@@ -96,15 +97,15 @@ class RushRecordsContainer extends React.Component {
   }
 
   async fetchPage() {
-    const { page, pageSize, sortKey, filterString } = this.state
-    return await fetchGet(rushStatsEndpoint, [page, pageSize, sortKey, filterString])
+    const { page, pageSize, sortKey, filterString, teamFilter } = this.state
+    return await fetchGet(rushStatsEndpoint, [page, pageSize, sortKey, filterString, teamFilter])
   }
 
-  onInputChange(event) {
+  onInputChange(event, filterOption) {
     const newState = {}
     const sanitizedString = event.target.value.replace(/[^A-Za-z ]+/g, '')
 
-    newState.filterString = {key: 'filterString', value: sanitizedString}
+    newState[filterOption] = {key: filterOption, value: sanitizedString}
 
     if (!sanitizedString) {
       newState.page = {key: 'page', value: 0}
@@ -193,7 +194,9 @@ class RushRecordsContainer extends React.Component {
     return (
       <div className="page">
         <h1> NFL Rush Records </h1>
-        <input type="text" id="fname" name="fname" placeholder="Search for a player..." onChange={this.onInputChange.bind(this)}></input>
+        <input type="text" id="fname" name="fname" placeholder="Filter by player..." onChange={(e) => this.onInputChange(e, 'filterString')}></input>
+        <button className="search-button" onClick={this.onSearch.bind(this)}> Search </button>
+        <input type="text" id="fname" name="fname" placeholder="Filter by team..." onChange={(e) => this.onInputChange(e, 'teamFilter')}></input>
         <button className="search-button" onClick={this.onSearch.bind(this)}> Search </button>
         <div className="toolbar"> Sort By: 
           <div>

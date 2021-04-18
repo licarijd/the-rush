@@ -21,7 +21,7 @@ const sortRushStats = (
   ord = SORT_ORDER.DESC
 ) => records.sort(compareByKey(sortKey, ord))
 
-const filterRushStats = (filterString, records) => records.filter(record => filterNameByString(record, filterString))
+const filterRushStats = (filterString, attr, records) => records.filter(record => filterNameByString(record, attr, filterString))
 
 const getPage = (records, page, pageSize = 10) => records.slice(page * pageSize, (page * pageSize) + pageSize)
 
